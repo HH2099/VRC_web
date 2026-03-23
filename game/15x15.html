@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15x15 迷宮進位轉換器</title>
+    <style>
+        :root {
+            --cell-size: 30px;
+            --bg-color: #f4f7f6;
+            --wall-color: #2c3e50;
+            --path-color: #ffffff;
+            --accent-color: #3498db;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 { color: var(--wall-color); margin-bottom: 10px; }
+        p { color: #666; margin-bottom: 20px; }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 迷宮網格樣式 */
+        .grid-wrapper {
+            user-select: none; /* 防止拖動時選中文字 */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(15, var(--cell-size));
+            grid-template-rows: repeat(15, var(--cell-size));
+            gap: 1px;
+            background-color: #ccc;
+            border: 2px solid var(--wall-color);
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: var(--path-color);
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .cell.wall {
+            background-color: var(--wall-color);
+        }
+
+        /* 數據表格樣式 */
+        .data-table {
+            border-collapse: collapse;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 4px 12px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .data-table tr:nth-child(even) { background-color: #f9f9f9; }
+
+        .bin-str { color: #e67e22; font-weight: bold; letter-spacing: 1px; }
+        .dec-val { color: #27ae60; font-weight: bold; }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-clear { background-color: #e74c3c; color: white; }
+        .btn-copy { background-color: var(--accent-color); color: white; }
+        button:hover { opacity: 0.8; }
+
+    </style>
+</head>
+<body>
+
+    <h1>15x15 迷宮矩陣轉換器</h1>
+    <p>點擊或拖曳滑鼠來繪製牆壁 (1)，空白處為路 (0)</p>
+
+    <div class="main-container">
+        <div class="grid-wrapper">
+            <div class="grid" id="mazeGrid"></div>
+            <div class="controls">
+                <button class="btn-clear" onclick="clearMaze()">清空重畫</button>
+                <button class="btn-copy" onclick="copyDecimals()">複製十進位數組</button>
+            </div>
+        </div>
+
+        <div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>二進位 (Binary)</th>
+                        <th>十進位 (Dec)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const SIZE = 15;
+        const gridElement = document.getElementById('mazeGrid');
+        const resultBody = document.getElementById('resultBody');
+        let isMouseDown = false;
+
+        // 初始化資料
+        function init() {
+            // 建立網格
+            for (let i = 0; i < SIZE * SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                // 滑鼠事件：支援點擊與拖曳
+                cell.addEventListener('mousedown', () => {
+                    isMouseDown = true;
+                    toggleCell(cell);
+                });
+                cell.addEventListener('mouseenter', () => {
+                    if (isMouseDown) toggleCell(cell);
+                });
+                gridElement.appendChild(cell);
+            }
+
+            // 建立右側表格列
+            for (let i = 0; i < SIZE; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td id="bin-${i}" class="bin-str">000000000000000</td>
+                    <td id="dec-${i}" class="dec-val">0</td>
+                `;
+                resultBody.appendChild(tr);
+            }
+        }
+
+        window.addEventListener('mouseup', () => isMouseDown = false);
+
+        function toggleCell(cell) {
+            cell.classList.toggle('wall');
+            updateData();
+        }
+
+        function updateData() {
+            const cells = document.querySelectorAll('.cell');
+            for (let r = 0; r < SIZE; r++) {
+                let binaryStr = "";
+                for (let c = 0; c < SIZE; c++) {
+                    const index = r * SIZE + c;
+                    binaryStr += cells[index].classList.contains('wall') ? "1" : "0";
+                }
+                
+                // 更新顯示
+                document.getElementById(`bin-${r}`).textContent = binaryStr;
+                document.getElementById(`dec-${r}`).textContent = parseInt(binaryStr, 2);
+            }
+        }
+
+        function clearMaze() {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('wall'));
+            updateData();
+        }
+
+        function copyDecimals() {
+            const decimals = [];
+            for (let i = 0; i < SIZE; i++) {
+                decimals.push(document.getElementById(`dec-${i}`).textContent);
+            }
+            const text = `[${decimals.join(', ')}]`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('已複製到剪貼簿: ' + text);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
