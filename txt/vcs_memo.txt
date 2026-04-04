@@ -1,3 +1,8 @@
 2026/4/4
-
-test aaa
+1.Discord 好友整合
+2.活動 Instance 可直接連結分享
+3.Inventory增加 Random 隨機選擇
+4.Udon 開放更多 VRC+ 功能
+beta
+新「配件系統」正在開發中
+5.自訂 Loading 畫面 UI
