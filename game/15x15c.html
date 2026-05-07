@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>15x15 迷宮進位轉換器</title>
+
     <style>
         :root {
             --cell-size: 30px;
@@ -35,15 +36,30 @@
             justify-content: center;
         }
 
-        .grid-wrapper { user-select: none; }
+        .grid-wrapper {
+            user-select: none;
+        }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(15, var(--cell-size));
+
+            /* 左側多一欄 row 數字 */
+            grid-template-columns: 40px repeat(15, var(--cell-size));
             grid-template-rows: repeat(15, var(--cell-size));
+
             gap: 1px;
             background-color: #ccc;
             border: 2px solid var(--wall-color);
+        }
+
+        .row-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecf0f1;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
         }
 
         .cell {
@@ -53,15 +69,44 @@
             cursor: pointer;
         }
 
-        .cell.wall { background-color: var(--wall-color); }
+        .cell.wall {
+            background-color: var(--wall-color);
+        }
 
         /* 右側表格 */
-        .data-container { max-height: 510px; overflow-y: auto; }
-        .data-table { border-collapse: collapse; font-family: monospace; font-size: 13px; }
-        .data-table th, .data-table td { border: 1px solid #ddd; padding: 6px 10px; }
-        .data-table th { background-color: var(--accent-color); color: white; position: sticky; top: 0; }
-        .bin-str { color: #e67e22; letter-spacing: 1px; }
-        .dec-val { color: var(--success-color); font-weight: bold; }
+        .data-container {
+            max-height: 510px;
+            overflow-y: auto;
+        }
+
+        .data-table {
+            border-collapse: collapse;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+        }
+
+        .data-table th {
+            background-color: var(--accent-color);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        .bin-str {
+            color: #e67e22;
+            letter-spacing: 1px;
+        }
+
+        .dec-val {
+            color: var(--success-color);
+            font-weight: bold;
+        }
 
         /* 單列複製按鈕 */
         .dec-copy-btn {
@@ -80,9 +125,19 @@
         }
 
         /* 控制區 */
-        .controls { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .button-group { display: flex; gap: 10px; }
-        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
         button {
             padding: 10px 15px;
             border: none;
@@ -92,11 +147,24 @@
             color: white;
         }
 
-        .btn-clear { background-color: #e74c3c; }
-        .btn-copy { background-color: var(--accent-color); }
-        .btn-import { background-color: var(--success-color); }
+        .btn-clear {
+            background-color: #e74c3c;
+        }
 
-        .import-area { display: flex; flex-direction: column; gap: 5px; }
+        .btn-copy {
+            background-color: var(--accent-color);
+        }
+
+        .btn-import {
+            background-color: var(--success-color);
+        }
+
+        .import-area {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
         input[type="text"] {
             padding: 10px;
             border: 1px solid #ccc;
@@ -107,32 +175,53 @@
         }
     </style>
 </head>
+
 <body>
 
     <h1>15x15 迷宮進位轉換器</h1>
 
     <div class="main-container">
+
         <div class="grid-wrapper">
+
             <div class="grid" id="mazeGrid"></div>
-            
+
             <div class="controls">
+
                 <div class="button-group">
-                    <button class="btn-clear" onclick="clearMaze()">清空重畫</button>
-                    <button class="btn-copy" onclick="copyDecimals()">複製十進位數組</button>
+                    <button class="btn-clear" onclick="clearMaze()">
+                        清空重畫
+                    </button>
+
+                    <button class="btn-copy" onclick="copyDecimals()">
+                        複製十進位數組
+                    </button>
                 </div>
-                
+
                 <div class="import-area">
-                    <label style="font-size: 14px; font-weight: bold;">匯入數據 (JSON 格式):</label>
+                    <label style="font-size: 14px; font-weight: bold;">
+                        匯入數據 (JSON 格式):
+                    </label>
+
                     <div style="display: flex; gap: 5px;">
-                        <input type="text" id="importInput" placeholder="例如: [32768, 0, 1024...]">
-                        <button class="btn-import" onclick="importMaze()">匯入</button>
+                        <input
+                            type="text"
+                            id="importInput"
+                            placeholder="例如: [32768, 0, 1024...]"
+                        >
+
+                        <button class="btn-import" onclick="importMaze()">
+                            匯入
+                        </button>
                     </div>
                 </div>
+
             </div>
         </div>
 
         <div class="data-container">
             <table class="data-table">
+
                 <thead>
                     <tr>
                         <th>Row</th>
@@ -140,42 +229,74 @@
                         <th>十進位 (Dec)</th>
                     </tr>
                 </thead>
+
                 <tbody id="resultBody"></tbody>
+
             </table>
         </div>
+
     </div>
 
     <script>
         const SIZE = 15;
+
         const gridElement = document.getElementById('mazeGrid');
         const resultBody = document.getElementById('resultBody');
+
         let isMouseDown = false;
 
         function init() {
-            // 建立網格
-            for (let i = 0; i < SIZE * SIZE; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.addEventListener('mousedown', (e) => {
-                    isMouseDown = true;
-                    toggleCell(cell);
-                });
-                cell.addEventListener('mouseenter', () => {
-                    if (isMouseDown) toggleCell(cell);
-                });
-                gridElement.appendChild(cell);
+
+            // 建立網格 + 左側 row 數字
+            for (let r = 0; r < SIZE; r++) {
+
+                // 左側 row 編號
+                const label = document.createElement('div');
+
+                label.className = 'row-label';
+                label.textContent = r;
+
+                gridElement.appendChild(label);
+
+                // 建立該 row 的格子
+                for (let c = 0; c < SIZE; c++) {
+
+                    const cell = document.createElement('div');
+
+                    cell.className = 'cell';
+
+                    cell.addEventListener('mousedown', () => {
+                        isMouseDown = true;
+                        toggleCell(cell);
+                    });
+
+                    cell.addEventListener('mouseenter', () => {
+                        if (isMouseDown) toggleCell(cell);
+                    });
+
+                    gridElement.appendChild(cell);
+                }
             }
 
-            // 建立表格
+            // 建立右側表格
             for (let i = 0; i < SIZE; i++) {
+
                 const tr = document.createElement('tr');
 
                 tr.innerHTML = `
-                    <td>${i + 1}</td>
-                    <td id="bin-${i}" class="bin-str">000000000000000</td>
+                    <td>${i}</td>
+
+                    <td id="bin-${i}" class="bin-str">
+                        000000000000000
+                    </td>
+
                     <td>
                         <span id="dec-${i}" class="dec-val">0</span>
-                        <button class="dec-copy-btn" onclick="copySingleDecimal(${i})">
+
+                        <button
+                            class="dec-copy-btn"
+                            onclick="copySingleDecimal(${i})"
+                        >
                             複製
                         </button>
                     </td>
@@ -185,32 +306,42 @@
             }
         }
 
-        window.addEventListener('mouseup', () => isMouseDown = false);
+        window.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
 
         function toggleCell(cell) {
+
             cell.classList.toggle('wall');
+
             updateData();
         }
 
         function updateData() {
+
             const cells = document.querySelectorAll('.cell');
 
             for (let r = 0; r < SIZE; r++) {
+
                 let binaryStr = "";
 
                 for (let c = 0; c < SIZE; c++) {
-                    binaryStr += cells[r * SIZE + c].classList.contains('wall')
+
+                    binaryStr +=
+                        cells[r * SIZE + c].classList.contains('wall')
                         ? "1"
                         : "0";
                 }
 
                 document.getElementById(`bin-${r}`).textContent = binaryStr;
+
                 document.getElementById(`dec-${r}`).textContent =
                     parseInt(binaryStr, 2);
             }
         }
 
         function clearMaze() {
+
             document
                 .querySelectorAll('.cell')
                 .forEach(c => c.classList.remove('wall'));
@@ -219,6 +350,7 @@
         }
 
         function copyDecimals() {
+
             const decimals = Array.from(
                 { length: SIZE },
                 (_, i) => document.getElementById(`dec-${i}`).textContent
@@ -226,22 +358,29 @@
 
             const text = `[${decimals.join(', ')}]`;
 
-            navigator.clipboard.writeText(text)
+            navigator.clipboard
+                .writeText(text)
                 .then(() => alert('已複製數組！'));
         }
 
         // 單列複製
         function copySingleDecimal(row) {
-            const value = document.getElementById(`dec-${row}`).textContent;
 
-            navigator.clipboard.writeText(value)
+            const value =
+                document.getElementById(`dec-${row}`).textContent;
+
+            navigator.clipboard
+                .writeText(value)
                 
         }
 
         function importMaze() {
-            const input = document.getElementById('importInput').value;
+
+            const input =
+                document.getElementById('importInput').value;
 
             try {
+
                 const data = JSON.parse(input);
 
                 if (!Array.isArray(data) || data.length !== SIZE) {
@@ -251,29 +390,39 @@
                 const cells = document.querySelectorAll('.cell');
 
                 data.forEach((val, r) => {
-                    // 將數字轉回 15 位的二進位字串，不足補 0
+
+                    // 轉成 15 位二進位
                     const binaryStr = parseInt(val)
                         .toString(2)
                         .padStart(SIZE, '0');
 
                     for (let c = 0; c < SIZE; c++) {
+
                         if (binaryStr[c] === '1') {
-                            cells[r * SIZE + c].classList.add('wall');
+
+                            cells[r * SIZE + c]
+                                .classList.add('wall');
+
                         } else {
-                            cells[r * SIZE + c].classList.remove('wall');
+
+                            cells[r * SIZE + c]
+                                .classList.remove('wall');
                         }
                     }
                 });
 
                 updateData();
+
                 alert('匯入成功！');
 
             } catch (e) {
+
                 alert('匯入失敗：' + e.message);
             }
         }
 
         init();
     </script>
+
 </body>
 </html>
