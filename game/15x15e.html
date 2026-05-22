@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15x15 迷宮進位轉換器</title>
+
+    <style>
+        :root {
+            --cell-size: 30px;
+            --bg-color: #f4f7f6;
+            --wall-color: #2c3e50;
+            --path-color: #ffffff;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .grid-wrapper {
+            user-select: none;
+        }
+
+        .grid {
+            display: grid;
+
+            /* 左側多一欄 row 數字 */
+            grid-template-columns: 40px repeat(15, var(--cell-size));
+            grid-template-rows: 40px repeat(15, var(--cell-size));
+
+            gap: 1px;
+            background-color: #ccc;
+            border: 2px solid var(--wall-color);
+        }
+
+        .row-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecf0f1;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: var(--path-color);
+            cursor: pointer;
+        }
+
+        .cell.wall {
+            background-color: var(--wall-color);
+        }
+		.cell.mark {
+    background-color: #e74c3c !important;
+}
+
+        /* 右側表格 */
+        .data-container {
+            max-height: 510px;
+            overflow-y: auto;
+        }
+
+        .data-table {
+            border-collapse: collapse;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+        }
+
+        .data-table th {
+            background-color: var(--accent-color);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        .bin-str {
+            color: #e67e22;
+            letter-spacing: 1px;
+        }
+
+        .dec-val {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* 單列複製按鈕 */
+        .dec-copy-btn {
+            margin-left: 6px;
+            padding: 2px 6px;
+            font-size: 11px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--success-color);
+            color: white;
+            cursor: pointer;
+        }
+
+        .dec-copy-btn:hover {
+            opacity: 0.85;
+        }
+
+        /* 控制區 */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-clear {
+            background-color: #e74c3c;
+        }
+
+        .btn-copy {
+            background-color: var(--accent-color);
+        }
+
+        .btn-import {
+            background-color: var(--success-color);
+        }
+
+        .import-area {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>15x15 迷宮進位轉換器</h1>
+
+    <div class="main-container">
+
+        <div class="grid-wrapper">
+
+            <div class="grid" id="mazeGrid"></div>
+
+            <div class="controls">
+
+                <div class="button-group">
+                    <button class="btn-clear" onclick="clearMaze()">
+                        清空重畫
+                    </button>
+
+                    <button class="btn-copy" onclick="copyDecimals()">
+                        複製十進位數組
+                    </button>
+					
+					<button class="btn-copy" onclick="copyMarks()">
+						複製紅色記號
+					</button>
+                </div>
+
+                <div class="import-area">
+                    <label style="font-size: 14px; font-weight: bold;">
+                        匯入數據 (JSON 格式):
+                    </label>
+
+                    <div style="display: flex; gap: 5px;">
+                        <input
+                            type="text"
+                            id="importInput"
+                            placeholder="例如: [32768, 0, 1024...]"
+                        >
+
+                        <button class="btn-import" onclick="importMaze()">
+                            匯入
+                        </button>
+                    </div>
+					
+					    <label style="font-size:14px; font-weight:bold;">
+							匯入紅色記號:
+						</label>
+
+						<div style="display:flex; gap:5px;">
+
+						<input
+						type="text"
+						id="markImportInput"
+						placeholder="例如: [0304, 0512]"
+						>
+
+						<button
+						class="btn-import"
+						onclick="importMarks()"
+						>
+						匯入記號
+						</button>
+					</div>
+
+            </div>
+        </div>
+
+        <div class="data-container">
+            <table class="data-table">
+
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>二進位 (Binary)</th>
+                        <th>十進位 (Dec)</th>
+                    </tr>
+                </thead>
+
+                <tbody id="resultBody"></tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const SIZE = 15;
+
+        const gridElement = document.getElementById('mazeGrid');
+        const resultBody = document.getElementById('resultBody');
+
+        let isMouseDown = false;
+
+        function init() {
+
+                 // 左上角空白
+const corner = document.createElement('div');
+corner.className = 'row-label';
+corner.textContent = '';
+gridElement.appendChild(corner);
+
+// 上方 column 數字
+for (let c = 0; c < SIZE; c++) {
+
+    const topLabel = document.createElement('div');
+
+    topLabel.className = 'row-label';
+    topLabel.textContent = c;
+
+    gridElement.appendChild(topLabel);
+}
+
+// 建立網格 + 左側 row 數字
+for (let r = 0; r < SIZE; r++) {
+
+    // 左側 row 編號
+    const label = document.createElement('div');
+
+    label.className = 'row-label';
+    label.textContent = r;
+
+    gridElement.appendChild(label);
+
+    // 建立該 row 的格子
+    for (let c = 0; c < SIZE; c++) {
+
+        const cell = document.createElement('div');
+
+        cell.className = 'cell';
+
+        // 左鍵 = 牆壁
+        cell.addEventListener('mousedown', (e) => {
+
+            if (e.button === 0) {
+
+                isMouseDown = true;
+
+                toggleCell(cell);
+            }
+        });
+
+        // 右鍵 = 標記
+        cell.addEventListener('contextmenu', (e) => {
+
+            e.preventDefault();
+
+            cell.classList.toggle('mark');
+        });
+
+        cell.addEventListener('mouseenter', () => {
+
+            if (isMouseDown) toggleCell(cell);
+        });
+
+        gridElement.appendChild(cell);
+    }
+}
+
+            // 建立右側表格
+            for (let i = 0; i < SIZE; i++) {
+
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td>${i}</td>
+
+                    <td id="bin-${i}" class="bin-str">
+                        000000000000000
+                    </td>
+
+                    <td>
+                        <span id="dec-${i}" class="dec-val">0</span>
+
+                        <button
+                            class="dec-copy-btn"
+                            onclick="copySingleDecimal(${i})"
+                        >
+                            複製
+                        </button>
+                    </td>
+                `;
+
+                resultBody.appendChild(tr);
+            }
+        }
+
+        window.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+
+        function toggleCell(cell) {
+
+            cell.classList.toggle('wall');
+
+            updateData();
+        }
+
+        function updateData() {
+
+            const cells = document.querySelectorAll('.cell');
+
+            for (let r = 0; r < SIZE; r++) {
+
+                let binaryStr = "";
+
+                for (let c = 0; c < SIZE; c++) {
+
+                    binaryStr +=
+                        cells[r * SIZE + c].classList.contains('wall')
+                        ? "1"
+                        : "0";
+                }
+
+                document.getElementById(`bin-${r}`).textContent = binaryStr;
+
+                document.getElementById(`dec-${r}`).textContent =
+                    parseInt(binaryStr, 2);
+            }
+        }
+
+        function clearMaze() {
+
+            document
+                .querySelectorAll('.cell')
+                .forEach(c => {
+					c.classList.remove('wall');
+					c.classList.remove('mark');
+					});
+
+            updateData();
+        }
+
+        function copyDecimals() {
+
+            const decimals = Array.from(
+                { length: SIZE },
+                (_, i) => document.getElementById(`dec-${i}`).textContent
+            );
+
+            const text = `[${decimals.join(', ')}]`;
+
+            navigator.clipboard
+                .writeText(text)
+                .then(() => alert('已複製數組！'));
+				
+    const cells = document.querySelectorAll('.cell');
+
+    const marks = [];
+
+    for (let r = 0; r < SIZE; r++) {
+
+        for (let c = 0; c < SIZE; c++) {
+
+            const cell = cells[r * SIZE + c];
+
+            if (cell.classList.contains('mark')) {
+
+                const code =
+                    String(c).padStart(2, '0') +
+                    String(r).padStart(2, '0');
+
+                marks.push(code);
+            }
+        }
+    }
+
+    const text = `[${marks.join(', ')}]`;
+
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            alert('已複製紅色記號！');
+        });	
+				
+        }
+
+        // 單列複製
+        function copySingleDecimal(row) {
+
+            const value =
+                document.getElementById(`dec-${row}`).textContent;
+
+            navigator.clipboard
+                .writeText(value)
+                
+        }
+
+        function importMaze() {
+
+            const input =
+                document.getElementById('importInput').value;
+
+            try {
+
+                const data = JSON.parse(input);
+
+                if (!Array.isArray(data) || data.length !== SIZE) {
+                    throw new Error("請輸入包含 15 個數字的陣列");
+                }
+
+                const cells = document.querySelectorAll('.cell');
+
+                data.forEach((val, r) => {
+
+                    // 轉成 15 位二進位
+                    const binaryStr = parseInt(val)
+                        .toString(2)
+                        .padStart(SIZE, '0');
+
+                    for (let c = 0; c < SIZE; c++) {
+
+                        if (binaryStr[c] === '1') {
+
+                            cells[r * SIZE + c]
+                                .classList.add('wall');
+
+                        } else {
+
+                            cells[r * SIZE + c]
+                                .classList.remove('wall');
+                        }
+                    }
+                });
+
+                updateData();
+
+                alert('匯入成功！');
+
+            } catch (e) {
+
+                alert('匯入失敗：' + e.message);
+            }
+        }
+
+        init();
+		
+		
+		function importMarks() {
+
+    const input =
+        document.getElementById('markImportInput').value;
+
+    try {
+
+        const data = JSON.parse(input);
+
+        const cells = document.querySelectorAll('.cell');
+
+        // 先清除舊記號
+        cells.forEach(c => c.classList.remove('mark'));
+
+        data.forEach(code => {
+
+            const str = String(code).padStart(4, '0');
+
+            const x = parseInt(str.substring(0, 2));
+            const y = parseInt(str.substring(2, 4));
+
+            if (
+                x >= 0 && x < SIZE &&
+                y >= 0 && y < SIZE
+            ) {
+
+                const index = y * SIZE + x;
+
+                cells[index].classList.add('mark');
+            }
+        });
+
+        alert('紅色記號匯入成功！');
+
+    } catch (e) {
+
+        alert('紅色記號匯入失敗：' + e.message);
+    }
+}
+    </script>
+
+</body>
+</html>
