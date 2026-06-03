@@ -1,8 +1,14 @@
-2026/5/2
-1.Avatar Accessories
-2.VRC+三人稱視角
-3.群組或房間Avatar Performance 限制機制
-4.VRCRaycast
+2026/6/3
+1.Group Instance Announcements
+	群組管理員可直接向群組 Instance 成員發布公告,大幅改善活動通知與社群管理效率
+
+2.VRC+ Leaderboard 
+	VRC+ 訂閱者排行榜重新上線
+
+3.Runtime Texture Compression
+執行時貼圖壓縮技術
+有望降低記憶體使用量
+改善世界與 Avatar 載入體驗
 
 .
 .
