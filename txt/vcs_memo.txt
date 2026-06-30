@@ -1,15 +1,16 @@
-2026/6/3
-1.Group Instance Announcements
-	群組管理員可直接向群組 Instance 成員發布公告,大幅改善活動通知與社群管理效率
+2026/6/30
+1. Desktop 第三人稱視角全面開放（最大更新）
+原本只有 VRC+ 可以使用
+6 月正式免費開放給所有 Desktop 玩家
+可自由拉遠鏡頭、旋轉視角，更方便：
+拍照
+錄影
+欣賞 Avatar
+第三人稱遊玩
 
-2.VRC+ Leaderboard 
-	VRC+ 訂閱者排行榜重新上線
+重點：
 
-3.Runtime Texture Compression
-執行時貼圖壓縮技術
-有望降低記憶體使用量
-改善世界與 Avatar 載入體驗
-
+不需要訂閱 VRC+ 就能使用第三人稱模式。
 .
 .
 .
