@@ -10,6 +10,7 @@
 
 除了玩家端功能之外，VRChat 也在強化創作者工具。例如官方正在加入更有效率的 Billboarding，以及更簡單的 Avatar Bone Tracking，讓 World 創作者不需要自己寫大量程式來追蹤物件的位置。
 
+丟相機
 .
 .
 .
